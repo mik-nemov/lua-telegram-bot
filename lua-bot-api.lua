@@ -76,7 +76,11 @@ local function configure(token)
     token = nil
   end
 
-  M.token = assert(token, "No token specified!")
+  if token ~= nil then
+    M.token = token
+  else
+    return nil
+  end
   local bot_info = M.getMe()
   if (bot_info) then
     M.id = bot_info.result.id
@@ -664,7 +668,7 @@ M.answerInlineQuery = answerInlineQuery
 -- Bot API 2.0
 
 local function sendVenue(chat_id, latitude, longitude, title, adress, foursquare_id, disable_notification, reply_to_message_id, reply_markup)
-  
+
   if not chat_id then return nil, "chat_id not specified" end
   if not latitude then return nil, "latitude not specified" end
   if not longitude then return nil, "longitude not specified" end
@@ -695,11 +699,11 @@ end
 M.sendVenue = sendVenue
 
 local function sendContact(chat_id, phone_number, first_name, last_name, disable_notification, reply_to_message_id, reply_markup)
-  
+
   if not chat_id then return nil, "chat_id not specified" end
   if not phone_number then return nil, "phone_number not specified" end
   if not first_name then return nil, "first_name not specified" end
- 
+
   request_body.chat_id = chat_id
   request_body.phone_number = tostring(phone_number)
   request_body.first_name = tostring(first_name)
@@ -727,7 +731,7 @@ local function kickChatMember(chat_id, user_id)
 
 	request_body.chat_id = chat_id
 	request_body.user_id = tonumber(user_id)
-	
+
 	local response = makeRequest("kickChatMember",request_body)
 
 	  if (response.success == 1) then
@@ -746,8 +750,8 @@ local function unbanChatMember(chat_id, user_id)
 	local request_body = {}
 
 	request_body.chat_id = chat_id
-	request_body.user_id = tonumber(user_id) 
-	
+	request_body.user_id = tonumber(user_id)
+
 	local response = makeRequest("unbanChatMember",request_body)
 
 	  if (response.success == 1) then
@@ -768,7 +772,7 @@ local function answerCallbackQuery(callback_query_id, text, show_alert)
 	request_body.callback_query_id = tostring(callback_query_id)
 	request_body.text = tostring(text)
 	request_body.show_alert = tostring(show_alert)
-	
+
 	local response = makeRequest("answerCallbackQuery",request_body)
 
 	  if (response.success == 1) then
@@ -781,7 +785,7 @@ end
 M.answerCallbackQuery = answerCallbackQuery
 
 local function editMessageText(chat_id, message_id, inline_message_id, text, parse_mode, disable_web_page_preview, reply_markup)
-	
+
   if not chat_id and not inline_message_id then return nil, "chat_id not specified" end
   if not message_id and not inline_message_id then return nil, "message_id not specified" end
   if not inline_message_id and not (chat_id and message_id) then return nil, "inline_message_id not specified" end
@@ -809,7 +813,7 @@ end
 M.editMessageText = editMessageText
 
 local function editMessageCaption(chat_id, message_id, inline_message_id, caption, reply_markup)
-  
+
   if not chat_id and not inline_message_id then return nil, "chat_id not specified" end
   if not message_id and not inline_message_id then return nil, "message_id not specified" end
   if not inline_message_id and not (chat_id and message_id) then return nil, "inline_message_id not specified" end
@@ -835,7 +839,7 @@ end
 M.editMessageCaption = editMessageCaption
 
 local function editMessageReplyMarkup(chat_id, message_id, inline_message_id, reply_markup)
-  
+
   if not chat_id and not inline_message_id then return nil, "chat_id not specified" end
   if not message_id and not inline_message_id then return nil, "message_id not specified" end
   if not inline_message_id and not (chat_id and message_id) then return nil, "inline_message_id not specified" end
@@ -1093,7 +1097,7 @@ local function run(limit, timeout)
   if limit == nil then limit = 1 end
   if timeout == nil then timeout = 0 end
   local offset = 0
-  while true do 
+  while true do
     local updates = M.getUpdates(offset, limit, timeout)
     if(updates) then
       if (updates.result) then
