@@ -26,6 +26,9 @@ local https = require("ssl.https")
 local ltn12 = require("ltn12")
 local encode = require("multipart.multipart-post").encode
 local JSON = require("JSON")
+require 'socket'
+
+RUNBOT = true
 
 local M = {} -- Main Bot Framework
 local E = {} -- Extension Framework
@@ -1093,11 +1096,17 @@ local function parseUpdateCallbacks(update)
   end
 end
 
-local function run(limit, timeout)
+local function run(limit, timeout, upd_interval, cron_function, cron_interval)
   if limit == nil then limit = 1 end
   if timeout == nil then timeout = 0 end
   local offset = 0
-  while true do
+
+  while RUNBOT == true do
+    socket.sleep(upd_interval)
+    if cron_function ~= nil and os.time() % cron_interval == 0 then
+      cron_function()
+    end
+    --coroutine.resume(co,cron_function)
     local updates = M.getUpdates(offset, limit, timeout)
     if(updates) then
       if (updates.result) then
