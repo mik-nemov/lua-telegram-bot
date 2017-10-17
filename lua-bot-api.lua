@@ -141,8 +141,8 @@ local function downloadFile(file_id, download_path)
 
   local response = {}
 
-  local file_info = getFile(file_id)
-  local download_file_path = download_path or "downloads/" .. file_info.result.file_path
+  local file_info = M.getFile(file_id)
+  local download_file_path = (download_path or "downloads") .. "/" .. file_info.result.file_path
 
   local download_file = io.open(download_file_path, "w")
 
