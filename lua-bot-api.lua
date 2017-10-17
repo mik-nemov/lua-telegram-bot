@@ -43,7 +43,13 @@ function JSON:onDecodeError(message, text, location, etc)
       message = string.format("%s: %s", message, text)
     end
   end
-  print((os.date("%x %X")), "Error while decoding JSON:\n", message)
+  --print((os.date("%x %X")), "Error while decoding JSON:\n", message)
+  local datefile = os.date("%d-%m-%Y.txt")
+  print((os.date("%x %X")), "Error: decode JSON, logged in ".. datefile)
+  local log = io.open("errors/" .. datefile,"a+") -- open log
+  log:write((os.date("%x %X")), "Error while decoding JSON:\n", message .. "\n") -- write in log
+  log:close()
+          
 end
 
 function JSON:onDecodeOfHTMLError(message, text, _nil, etc)
@@ -54,7 +60,12 @@ function JSON:onDecodeOfHTMLError(message, text, _nil, etc)
       message = string.format("%s: %s", message, text)
     end
   end
-  print((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message)
+  --print((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message)
+  local datefile = os.date("%d-%m-%Y.txt")
+  print((os.date("%x %X")), "Error: decode JSON [HTML], logged in ".. datefile)
+  local log = io.open("errors/" .. datefile,"a+") -- open log
+  log:write((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message .. "\n") -- write in log
+  log:close()
 end
 
 function JSON:onDecodeOfNilError(message, _nil, _nil, etc)
@@ -203,13 +214,14 @@ M.generateForceReply = generateForceReply
 
 -- Bot API 1.0
 
-local function getUpdates(offset, limit, timeout)
+local function getUpdates(offset, limit, timeout, allowed_updates)
 
   local request_body = {}
 
   request_body.offset = offset
   request_body.limit = limit
   request_body.timeout = timeout or 0
+  request_body.allowed_updates = allowed_updates or nil
 
   local response =  makeRequest("getUpdates", request_body)
 
@@ -337,7 +349,7 @@ end
 M.sendPhoto = sendPhoto
 
 
-local function sendAudio(chat_id, audio, duration, performer, title, disable_notification, reply_to_message_id, reply_markup)
+local function sendAudio(chat_id, audio, caption, duration, performer, title, disable_notification, reply_to_message_id, reply_markup)
 
   if not chat_id then return nil, "chat_id not specified" end
   if not audio then return nil, "audio not specified" end
@@ -362,6 +374,7 @@ local function sendAudio(chat_id, audio, duration, performer, title, disable_not
   request_body.chat_id = chat_id
   request_body.audio = file_id or audio_data
   request_body.duration = duration
+  request_body.caption = caption
   request_body.performer = performer
   request_body.title = title
   request_body.disable_notification = tostring(disable_notification)
@@ -502,7 +515,7 @@ end
 M.sendVideo = sendVideo
 
 
-local function sendVoice(chat_id, voice, duration, disable_notification, reply_to_message_id, reply_markup)
+local function sendVoice(chat_id, voice, caption, duration, disable_notification, reply_to_message_id, reply_markup)
 
   if not chat_id then return nil, "chat_id not specified" end
   if not voice then return nil, "voice not specified" end
@@ -527,6 +540,7 @@ local function sendVoice(chat_id, voice, duration, disable_notification, reply_t
   request_body.chat_id = chat_id
   request_body.voice = file_id or voice_data
   request_body.duration = duration
+  request_body.caption = caption
   request_body.disable_notification = tostring(disable_notification)
   request_body.reply_to_message_id = tonumber(reply_to_message_id)
   request_body.reply_markup = reply_markup
@@ -766,7 +780,7 @@ end
 
 M.unbanChatMember = unbanChatMember
 
-local function answerCallbackQuery(callback_query_id, text, show_alert)
+local function answerCallbackQuery(callback_query_id, text, show_alert, cache_time)
 
 	if not callback_query_id then return nil, "callback_query_id not specified" end
 
@@ -775,7 +789,8 @@ local function answerCallbackQuery(callback_query_id, text, show_alert)
 	request_body.callback_query_id = tostring(callback_query_id)
 	request_body.text = tostring(text)
 	request_body.show_alert = tostring(show_alert)
-
+	request_body.cache_time = tostring(cache_time)
+  
 	local response = makeRequest("answerCallbackQuery",request_body)
 
 	  if (response.success == 1) then
@@ -797,7 +812,7 @@ local function editMessageText(chat_id, message_id, inline_message_id, text, par
   local request_body = {}
 
   request_body.chat_id = chat_id
-  request_body.message_id = tonumber(chat_id)
+  request_body.message_id = tonumber(message_id)
   request_body.inline_message_id = tostring(inline_message_id)
   request_body.text = tostring(text)
   request_body.parse_mode = tostring(parse_mode)
@@ -825,7 +840,7 @@ local function editMessageCaption(chat_id, message_id, inline_message_id, captio
   local request_body = {}
 
   request_body.chat_id = chat_id
-  request_body.message_id = tonumber(chat_id)
+  request_body.message_id = tonumber(message_id)
   request_body.inline_message_id = tostring(inline_message_id)
   request_body.caption = tostring(caption)
   request_body.reply_markup = reply_markup
@@ -850,7 +865,7 @@ local function editMessageReplyMarkup(chat_id, message_id, inline_message_id, re
   local request_body = {}
 
   request_body.chat_id = chat_id
-  request_body.message_id = tonumber(chat_id)
+  request_body.message_id = tonumber(message_id)
   request_body.inline_message_id = tostring(inline_message_id)
   request_body.reply_markup = reply_markup
 
@@ -1034,6 +1049,12 @@ E.onChosenInlineQueryReceive = onChosenInlineQueryReceive
 local function onCallbackQueryReceive(CallbackQuery) end
 E.onCallbackQueryReceive = onCallbackQueryReceive
 
+local function onChannelPost(post) end
+E.onChannelPost = onChannelPost
+
+local function onChannelEditPost(post) end
+E.onChannelEditPost = onChannelEditPost
+
 local function onUnknownTypeReceive(unknownType)
   print("new unknownType!")
 end
@@ -1091,6 +1112,10 @@ local function parseUpdateCallbacks(update)
     E.onChosenInlineQueryReceive(update.chosen_inline_result)
   elseif (update.callback_query) then
     E.onCallbackQueryReceive(update.callback_query)
+  elseif (update.channel_post) then
+  	E.onChannelPost(update.channel_post)
+  elseif (update.edited_channel_post) then
+  	E.onChannelEditPost(update.edited_channel_post)
   else
     E.onUnknownTypeReceive(update)
   end
