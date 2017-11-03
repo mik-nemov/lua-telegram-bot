@@ -44,12 +44,11 @@ function JSON:onDecodeError(message, text, location, etc)
     end
   end
   --print((os.date("%x %X")), "Error while decoding JSON:\n", message)
-  local datefile = os.date("%d-%m-%Y.txt")
-  print((os.date("%x %X")), "Error: decode JSON, logged in ".. datefile)
-  local log = io.open("errors/" .. datefile,"a+") -- open log
-  log:write((os.date("%x %X")), "Error while decoding JSON:\n", message .. "\n") -- write in log
-  log:close()
-          
+  --local datefile = os.date("%d-%m-%Y.txt")
+  print((os.date("%x %X")), "Error while decoding JSON:\n", message .. "\n")
+  --local log = io.open("errors/" .. datefile,"a+") -- open log
+  --log:write((os.date("%x %X")), "Error while decoding JSON:\n", message .. "\n") -- write in log
+  --log:close()
 end
 
 function JSON:onDecodeOfHTMLError(message, text, _nil, etc)
@@ -61,11 +60,11 @@ function JSON:onDecodeOfHTMLError(message, text, _nil, etc)
     end
   end
   --print((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message)
-  local datefile = os.date("%d-%m-%Y.txt")
-  print((os.date("%x %X")), "Error: decode JSON [HTML], logged in ".. datefile)
-  local log = io.open("errors/" .. datefile,"a+") -- open log
-  log:write((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message .. "\n") -- write in log
-  log:close()
+  --local datefile = os.date("%d-%m-%Y.txt")
+  print((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message .. "\n")
+  --local log = io.open("errors/" .. datefile,"a+") -- open log
+  --log:write((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message .. "\n") -- write in log
+  --log:close()
 end
 
 function JSON:onDecodeOfNilError(message, _nil, _nil, etc)
