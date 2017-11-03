@@ -30,9 +30,12 @@ require 'socket'
 
 RUNBOT = true
 
+
 local M = {} -- Main Bot Framework
 local E = {} -- Extension Framework
 local C = {} -- Configure Constructor
+
+M.JSONerror = ''
 
 -- JSON Error handlers
 function JSON:onDecodeError(message, text, location, etc)
@@ -45,7 +48,8 @@ function JSON:onDecodeError(message, text, location, etc)
   end
   --print((os.date("%x %X")), "Error while decoding JSON:\n", message)
   --local datefile = os.date("%d-%m-%Y.txt")
-  print((os.date("%x %X")), "Error while decoding JSON:\n", message .. "\n")
+  --print((os.date("%x %X")), "Error while decoding JSON:\n", message .. "\n")
+  M.JSONerror = "lua-bot-api: Error while decoding JSON: "..message
   --local log = io.open("errors/" .. datefile,"a+") -- open log
   --log:write((os.date("%x %X")), "Error while decoding JSON:\n", message .. "\n") -- write in log
   --log:close()
@@ -61,7 +65,8 @@ function JSON:onDecodeOfHTMLError(message, text, _nil, etc)
   end
   --print((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message)
   --local datefile = os.date("%d-%m-%Y.txt")
-  print((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message .. "\n")
+  --print((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message .. "\n")
+  M.JSONerror = "lua-bot-api: Error while decoding JSON [HTML]: "..message
   --local log = io.open("errors/" .. datefile,"a+") -- open log
   --log:write((os.date("%x %X")), "Error while decoding JSON [HTML]:\n", message .. "\n") -- write in log
   --log:close()
@@ -75,11 +80,13 @@ function JSON:onDecodeOfNilError(message, _nil, _nil, etc)
       message = string.format("%s: %s", message, text)
     end
   end
-  print((os.date("%x %X")), "Error while decoding JSON [nil]:\n", message)
+  --print((os.date("%x %X")), "Error while decoding JSON [nil]:\n", message)
+  M.JSONerror = "lua-bot-api: Error while decoding JSON [nil]: "..message
 end
 
 function JSON:onEncodeError(message, etc)
-  print((os.date("%x %X")), "Error while encoding JSON:\n", message)
+  --print((os.date("%x %X")), "Error while encoding JSON:\n", message)
+  M.JSONerror = "lua-bot-api: Error while encoding JSON: "..message
 end
 
 -- configure and initialize bot
@@ -109,7 +116,7 @@ local function makeRequest(method, request_body)
 
   local response = {}
   local body, boundary = encode(request_body)
-
+  JSONerror = ''
   local success, code, headers, status = https.request{
     url = "https://api.telegram.org/bot" .. M.token .. "/" .. method,
     method = "POST",
