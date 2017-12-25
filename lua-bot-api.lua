@@ -338,14 +338,18 @@ local function sendPhoto(chat_id, photo, caption, disable_notification, reply_to
   if not(string.find(photo, "%.")) then
     file_id = photo
   else
-    file_id = nil
-    local photo_file = io.open(photo, "r")
+    if not(string.find(photo, "^http")) then
+        file_id = nil
+        local photo_file = io.open(photo, "r")
 
-    photo_data.filename = photo
-    photo_data.data = photo_file:read("*a")
-    photo_data.content_type = "image"
+        photo_data.filename = photo
+        photo_data.data = photo_file:read("*a")
+        photo_data.content_type = "image"
 
-    photo_file:close()
+        photo_file:close()
+    else
+      file_id = photo
+    end
   end
 
   request_body.chat_id = chat_id
