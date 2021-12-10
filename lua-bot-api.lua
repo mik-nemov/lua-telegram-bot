@@ -26,7 +26,7 @@ local https = require("ssl.https")
 local ltn12 = require("ltn12")
 local encode = require("multipart.multipart-post").encode
 local JSON = require("JSON")
-require 'socket'
+local socket = require("socket")
 
 RUNBOT = true
 
@@ -620,6 +620,7 @@ local function sendChatAction(chat_id, action)
     ["upload_audio"] = true,
     ["upload_document"] = true,
     ["find_location"] = true,
+    ["choose_sticker"] = true,
   }
 
   if (not allowedAction[action]) then action = "typing" end
@@ -1153,7 +1154,7 @@ local function run(limit, timeout, upd_interval, cron_function, cron_interval)
     if cron_function ~= nil and os.time() % cron_interval == 0 then
       cron_function()
     end
-    --coroutine.resume(co,cron_function)
+
     local updates = M.getUpdates(offset, limit, timeout)
     if(updates) then
       if (updates.result) then
